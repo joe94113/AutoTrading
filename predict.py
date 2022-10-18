@@ -14,7 +14,7 @@ class Action:
 
 class Trader:
     def __init__(self):
-        self.batch_size = 64
+        self.batch_size = 32
         self.epochs = 50
         self.time_frame = 20
         self.dimension = 4
