@@ -34,8 +34,8 @@ if __name__ == "__main__":
             # 取得明日開盤價以及隔天動作
             pred = model.predict(X_test)
             denorm_pred = trader.denormalize(training_data, pred)
-            denorm_ytest = trader.denormalize(training_data, y_test)
-            trader.draw_predict_result(denorm_pred, denorm_ytest)
+            # denorm_ytest = trader.denormalize(training_data, y_test)
+            # trader.draw_predict_result(denorm_pred, denorm_ytest)
             forecast_price = denorm_pred[-1][0]
             action = trader.predict_action(forecast_price)
 
