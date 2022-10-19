@@ -28,10 +28,10 @@ class Trader:
         model.fit( X_train, y_train, batch_size=self.batch_size, epochs=self.epochs, validation_split=0.1, verbose=1)
 
         # 查看模型訓練結果
-        pred = model.predict(X_test)
-        denorm_pred = self.denormalize(training_data, pred)
-        denorm_ytest = self.denormalize(training_data, y_test)
-        self.draw_predict_result(denorm_pred, denorm_ytest)
+        # pred = model.predict(X_test)
+        # denorm_pred = self.denormalize(training_data, pred)
+        # denorm_ytest = self.denormalize(training_data, y_test)
+        # self.draw_predict_result(denorm_pred, denorm_ytest)
 
         return model
 
@@ -125,7 +125,7 @@ class Trader:
     # 決定是否要買進
     def predict_action(self, forecast_price, denorm_pred):
             if (len(self.output) == 0):
-                print(denorm_pred[-2][0])
+                # print(denorm_pred[-2][0])
                 if(forecast_price > denorm_pred[-2][0]):
                     action = Action.BUY
                 else:
