@@ -1,5 +1,5 @@
 # You can write code above the if-main block.
-from predict import Trader
+from predict import Trader, Action
 
 if __name__ == "__main__":
     # You should not modify this part.
@@ -14,11 +14,9 @@ if __name__ == "__main__":
     # The following part is an example.
     # You can modify it at will.
     trader = Trader()
+    stock_action = Action()
     training_data = trader.load_data(args.training)
-    foxconndf_norm = trader.normalize(training_data)
-    X_train, y_train, X_test, y_test = trader.data_helper(foxconndf_norm, trader.time_frame)
-    model = trader.build_model( trader.time_frame, trader.dimension )
-    model.fit( X_train, y_train, batch_size=trader.batch_size, epochs=trader.epochs, validation_split=0.1, verbose=1)
+    model = trader.train(training_data)
 
     testing_data = trader.load_data(args.testing)
     with open(args.output, "w") as output_file:
@@ -26,18 +24,22 @@ if __name__ == "__main__":
             if(len(testing_data.values) - 1 == idx):
                 continue
 
-            # 將新資料寫回並正規化
-            training_data = trader.add_row_to_df(row, training_data)
-            foxconndf_norm = trader.normalize(training_data)
-            X_train, y_train, X_test, y_test = trader.data_helper(foxconndf_norm, 20)
-            
-            # 取得明日開盤價以及隔天動作
-            pred = model.predict(X_test)
-            denorm_pred = trader.denormalize(training_data, pred)
-            # denorm_ytest = trader.denormalize(training_data, y_test)
-            # trader.draw_predict_result(denorm_pred, denorm_ytest)
-            forecast_price = denorm_pred[-1][0]
-            action = trader.predict_action(forecast_price)
+            try:
+                # 將新資料寫回並正規化
+                training_data = trader.add_row_to_df(row, training_data)
+                foxconndf_norm = trader.normalize(training_data)
+                X_train, y_train, X_test, y_test = trader.data_helper(foxconndf_norm, 20)
+                
+                # 取得明日開盤價以及隔天動作
+                pred = model.predict(X_test)
+                denorm_pred = trader.denormalize(training_data, pred)
+                # denorm_ytest = trader.denormalize(training_data, y_test)
+                # trader.draw_predict_result(denorm_pred, denorm_ytest)
+                forecast_price = denorm_pred[-1][0]
+                action = trader.predict_action(forecast_price, denorm_pred)
+            except Exception as e:
+                print(e)
+                action = stock_action.HOLD
 
             # 寫入檔案
             output_file.write(f"{action}")

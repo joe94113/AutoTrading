@@ -21,12 +21,17 @@ class Trader:
         self.output = []
         self.predPrices = []
 
-    def train(self, df_name):
-        # foxconndf = self.load_data('/content/training_data.csv')
-        foxconndf_norm = self.normalize(df_name)
+    def train(self, training_data):
+        foxconndf_norm = self.normalize(training_data)
         X_train, y_train, X_test, y_test = self.data_helper(foxconndf_norm, self.time_frame)
-        model = self.build_model(self.time_frame, self.dimension)
-        model.fit( X_train, y_train, batch_size=64, epochs=50, validation_split=0.1, verbose=1)
+        model = self.build_model( self.time_frame, self.dimension )
+        model.fit( X_train, y_train, batch_size=self.batch_size, epochs=self.epochs, validation_split=0.1, verbose=1)
+
+        # 查看模型訓練結果
+        pred = model.predict(X_test)
+        denorm_pred = self.denormalize(training_data, pred)
+        denorm_ytest = self.denormalize(training_data, y_test)
+        self.draw_predict_result(denorm_pred, denorm_ytest)
 
         return model
 
@@ -118,10 +123,14 @@ class Trader:
         return df
 
     # 決定是否要買進
-    def predict_action(self, forecast_price):
+    def predict_action(self, forecast_price, denorm_pred):
             if (len(self.output) == 0):
-                action = Action.BUY
-                # 當持有股票，未來大於現在，則持有
+                print(denorm_pred[-2][0])
+                if(forecast_price > denorm_pred[-2][0]):
+                    action = Action.BUY
+                else:
+                    action = Action.SELL
+            # 當持有股票，未來大於現在，則持有
             elif (self.predPrices[len(self.predPrices) -1] < forecast_price and sum(self.output) == 1):
                 action = Action.HOLD
             # 當持有股票，未來小於現在，則賣出
